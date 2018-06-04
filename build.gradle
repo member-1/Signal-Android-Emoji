@@ -1,0 +1,67 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.1.2'
+    }
+}
+
+plugins {
+    id "de.undercouch.download" version "3.4.3"
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+// The EmojiOne license states that open source projects aren't allowed to
+// include the "EmojiOne Properties". We are allowed to download them during
+// the build process though (verified by EmojiOne support).
+ext.src = [
+        'https://i.lensdump.com/i/8S9kPv.png': 'Activity.png',
+        'https://i.lensdump.com/i/8S9CjC.png': 'Flags.png',
+        'https://i.lensdump.com/i/8S9Jd5.png': 'Foods.png',
+        'https://i.lensdump.com/i/8S9QMz.png': 'Nature.png',
+        'https://i.lensdump.com/i/8S9VhT.png': 'Objects.png',
+        'https://i.lensdump.com/i/8S9d6b.png': 'People.png',
+        'https://i.lensdump.com/i/8S9qz7.png': 'Places.png',
+        'https://i.lensdump.com/i/8S9Bwr.png': 'Symbols.png'
+]
+
+def verify = [
+        'Activity.png': '9a078da2a533d416a940607059817b254bb12895',
+        'Flags.png'   : '6af7e84cd7c7478fe88a3fc5f98bbaa97d94f30f',
+        'Foods.png'   : 'ddc055ca1071dae6d7a3e23f463be5805d38665e',
+        'Nature.png'  : 'c3e0f9995be2db343b43372b16a5185db23554e8',
+        'Objects.png' : '8cd3efeca94762352655a186d9963d307e10ecdc',
+        'People.png'  : '6c453eb3bde9f5d49daf94af505e5b83ecdf8d8f',
+        'Places.png'  : '9af3ca4558514f787e6de77d11dd566269447252',
+        'Symbols.png' : '0629c4a979b898ff73d9dfd97784303306bec4e1'
+]
+
+task downloadAndVerifyMultipleFiles {
+    for (s in src) {
+        download {
+            src s.key
+            dest new File('app/src/main/assets/emoji', s.value)
+            onlyIfModified true
+            useETag true
+        }
+    }
+    for (s in verify) {
+        verifyChecksum {
+            src new File('app/src/main/assets/emoji', s.key)
+            algorithm 'SHA-1'
+            checksum s.value
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
